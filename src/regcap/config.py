@@ -74,7 +74,7 @@ def validate_config(config_dir: Path = CONFIG_DIR) -> list[str]:
         "tdc_connection",
         "claim_boundary_safe",
         "claim_boundary_unsafe",
-        "go_no_go_recommendation",
+        "research_priority_note",
         "implementation_priority",
     }
     contracts = contracts_data["contracts"]

@@ -279,7 +279,13 @@ def _dealer_bridge_row(imported_root: Path, mechanism: dict[str, str]) -> dict[s
     rows, _ = _read_csv_rows(path)
     headlines = [row for row in rows if row.get("status") == "headline"
                  and row.get("claim") == "maturity_bucket_fe_monday"]
-    boundaries = [row.get("interpretation", "") for row in rows if row.get("status") == "boundary"]
+    boundaries = [
+        row["interpretation"].strip()
+        for row in rows
+        if row.get("status") == "boundary"
+        and row.get("claim") == "lp_placebo_boundary"
+        and row.get("interpretation", "").strip()
+    ]
     if len(headlines) != 1 or not any(boundaries):
         return _base_row(
             mechanism,
@@ -329,7 +335,13 @@ def _duration_loss_row(imported_root: Path, mechanism: dict[str, str]) -> dict[s
         for row in duration_rows
         if row.get("duration_loss_dominant_share") not in {None, ""}
     ]
-    note = "; ".join(pieces) if pieces else "Regime summary is present, but duration-loss window rows were not found."
+    if not pieces:
+        return _base_row(
+            mechanism, "unavailable", "slrwatch; bankcap; qrawatch",
+            "Regime summary has no usable duration-loss window evidence.",
+            mechanism["claim_boundary_unsafe"],
+        )
+    note = "; ".join(pieces)
     return _base_row(
         mechanism,
         "guarded regime mechanism",
@@ -359,7 +371,11 @@ def _slr_row(imported_root: Path, mechanism: dict[str, str]) -> dict[str, str]:
         ]
         note = "Cautionary event-study read: " + "; ".join(pieces) + "."
     else:
-        note = "Event-study surface is present, but UST inventory rows were not found."
+        return _base_row(
+            mechanism, "unavailable", "slrwatch; bankcap",
+            "Event-study surface has no UST inventory outcome evidence.",
+            mechanism["claim_boundary_unsafe"],
+        )
     return _base_row(
         mechanism,
         "cautionary mechanism classifier",
@@ -387,7 +403,7 @@ def _lcr_row(imported_root: Path, mechanism: dict[str, str]) -> dict[str, str]:
     if not isinstance(ingestion, dict):
         ingestion = {}
     note = (
-        f"{data.get('recommendation', 'H.8 summary imported')}; "
+        "Bankcap limits this to H.8 mechanism context; "
         f"context-complete share {_format_number(sample.get('context_complete_share'), 2)}, "
         f"coupon-heavy rows {sample.get('coupon_heavy_rows', 'n/a')}, "
         f"bank-level ingestion {ingestion.get('status', 'n/a')}."
@@ -425,7 +441,10 @@ def _qrawatch_dealer_context(imported_root: Path) -> str:
                 f"{latest.get('units', 'rows')} as of {latest.get('as_of_date', 'n/a')}"
             )
     if qra_path.exists():
-        rows, _ = _read_csv_rows(qra_path)
+        rows, columns = _read_csv_rows(qra_path)
+        if "usable_for_headline" not in columns:
+            pieces.append("QRA source flags are unavailable: missing usable_for_headline column")
+            return "; ".join(pieces)
         usable = sum(1 for row in rows if row.get("usable_for_headline") == "True")
         descriptive = sum(1 for row in rows if row.get("claim_scope") == "descriptive_only")
         pieces.append(f"QRA source table has {usable} usable_for_headline=True flags and {descriptive} descriptive-only rows; these flags do not admit identification in regcap")

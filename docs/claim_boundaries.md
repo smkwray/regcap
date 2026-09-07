@@ -22,4 +22,4 @@ These boundaries apply to the `regcap` package.
 
 ## Required public posture
 
-Use `regcap` outputs as mechanism architecture and design classification unless a later lane adds a stronger identification design. The current package should help decide which domestic-capacity mechanism deserves promotion, not overstate that any one mechanism explains the TDC deposit footprint.
+Use `regcap` outputs as mechanism architecture and design classification unless a later lane adds a stronger identification design. The current package should help decide which domestic-capacity mechanism merits further research, not overstate that any one mechanism explains the TDC deposit footprint.

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import hashlib
+import re
 
 import pytest
 
@@ -140,6 +141,12 @@ def test_evidence_summary_can_feed_design_report(tmp_path: Path, monkeypatch):
     assert "qrawatch dealer panel" in evidence_text
     assert "not final holder absorption" in evidence_text
     assert "Do not infer customer identity" in dealer_text
+    assert "Bankcap limits this to H.8 mechanism context" in evidence_text
+    for generated in (matrix, report, evidence_report, dealer_memo, evidence_csv):
+        assert not re.search(
+            r"\b(?:partial\s+)?go\b|deserves promotion|go_no_go_recommendation|strongest near-term promotion",
+            generated.read_text(), re.IGNORECASE,
+        ), generated.name
 
 
 def _pin_fixture_contracts(imported_root, monkeypatch):
@@ -151,7 +158,7 @@ def _pin_fixture_contracts(imported_root, monkeypatch):
     monkeypatch.setattr(evidence, "load_source_contracts", lambda: contracts)
 
 
-@pytest.mark.parametrize("defect", ["missing_headline", "duplicate_headline", "missing_boundary", "nonfinite"])
+@pytest.mark.parametrize("defect", ["missing_headline", "duplicate_headline", "missing_boundary", "unrelated_boundary", "blank_boundary", "nonfinite"])
 def test_dealer_evidence_never_falls_back_to_lp_or_promotes_invalid_rows(tmp_path, monkeypatch, defect):
     imported = tmp_path / "imported"
     _write_minimal_imports(imported)
@@ -163,6 +170,10 @@ def test_dealer_evidence_never_falls_back_to_lp_or_promotes_invalid_rows(tmp_pat
         lines.append(next(line for line in lines if line.startswith("maturity_bucket_fe_monday,")))
     elif defect == "missing_boundary":
         lines = [line for line in lines if not line.startswith("lp_placebo_boundary,")]
+    elif defect == "unrelated_boundary":
+        lines = [line.replace("lp_placebo_boundary,", "unrelated_boundary,") for line in lines]
+    elif defect == "blank_boundary":
+        lines = [line.replace("LP does not provide clean timing validation.", "   ") for line in lines]
     else:
         lines = [line.replace(",9.45,", ",nan,") for line in lines]
     path.write_text("\n".join(lines))
@@ -170,6 +181,9 @@ def test_dealer_evidence_never_falls_back_to_lp_or_promotes_invalid_rows(tmp_pat
     rows = build_evidence_rows(imported)
     assert rows[0]["status"] in {"invalid", "unavailable"}
     assert "7.23" not in rows[0]["evidence_note"]
+    assert "9.45" not in rows[0]["evidence_note"]
+    if defect in {"unrelated_boundary", "blank_boundary"}:
+        assert rows[0]["status"] == "unavailable"
     memo = tmp_path / "memo.md"
     write_dealer_bridge_memo(rows, memo)
     assert "first promoted" not in memo.read_text()
@@ -209,3 +223,35 @@ def test_cached_summary_is_rejected_when_source_status_changes(tmp_path, monkeyp
     monkeypatch.setattr(validation, "PROJECT_ROOT", tmp_path)
     with pytest.raises(ConfigError, match="stale relative"):
         validation.validate_package()
+
+
+@pytest.mark.parametrize("filename,target,mechanism_id", [
+    ("constraint_decomposition_regime_summary.csv", "duration_loss_window", "duration_loss_aoci_htm"),
+    ("event_2020_did_results.csv", "ust_inventory_fv_scaled", "slr_leverage_capacity"),
+])
+def test_missing_nondealer_target_rows_are_unavailable(tmp_path, monkeypatch, filename, target, mechanism_id):
+    imported = tmp_path / "imported"
+    _write_minimal_imports(imported)
+    path = imported / "slrwatch" / filename
+    path.write_text(path.read_text().replace(target, "unrelated_target"))
+    _pin_fixture_contracts(imported, monkeypatch)
+    row = next(row for row in build_evidence_rows(imported) if row["mechanism_id"] == mechanism_id)
+    assert row["status"] == "unavailable"
+    assert not re.search(r"\d", row["evidence_note"])
+    assert row["context_note"] == ""
+
+
+def test_missing_qra_flag_field_fails_schema_and_does_not_imply_zero_flags(tmp_path, monkeypatch):
+    imported = tmp_path / "imported"
+    _write_minimal_imports(imported)
+    path = imported / "qrawatch/qra_event_shock_summary.csv"
+    path.write_text(path.read_text().replace(",usable_for_headline,", ",").replace(",True,", ","))
+    _pin_fixture_contracts(imported, monkeypatch)
+    checks = validate_imported_artifacts(imported, {"qrawatch"})
+    check = next(check for check in checks if check.destination == path)
+    assert check.failed
+    assert "missing columns: ['usable_for_headline']" == check.details
+    context = build_evidence_rows(imported)[0]["context_note"]
+    assert "flags are unavailable" in context
+    assert "usable_for_headline=True flags" not in context
+    assert "descriptive-only rows" not in context

@@ -173,6 +173,7 @@ contracts:
             - event_date_aligned
             - timing_quality
             - shock_review_status
+            - usable_for_headline
             - claim_scope
         notes: QRA/refunding event shock context.
   rowflow:

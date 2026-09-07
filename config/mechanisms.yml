@@ -17,7 +17,7 @@ mechanisms:
     tdc_connection: Constrains bank willingness to absorb Treasuries and reserves, shaping whether issuance maps into bank securities, deposits, reserves, dealers, MMFs, or the Fed.
     claim_boundary_safe: Leverage pressure is a plausible domestic absorption constraint and current public evidence is cautionary rather than settled.
     claim_boundary_unsafe: SLR relief robustly caused Treasury absorption across samples or proves the TDC deposit response.
-    go_no_go_recommendation: Go as a guarded mechanism/regime classifier; no-go as a headline causal absorption claim unless later evidence strengthens.
+    research_priority_note: Guarded mechanism/regime classification; a headline causal absorption claim requires stronger evidence.
     implementation_priority: 3
 
   - mechanism_id: lcr_hqla_demand
@@ -38,7 +38,7 @@ mechanisms:
     tdc_connection: May tilt domestic bank demand toward bills or liquid Treasury claims when Treasury supply needs domestic balance-sheet absorption.
     claim_boundary_safe: Liquidity needs may tilt bank demand toward high-quality liquid Treasury claims.
     claim_boundary_unsafe: LCR mechanically predicts marginal Treasury absorption without direct measurement or a clean design.
-    go_no_go_recommendation: Sidecar go for variable registry and design notes; wait for stronger threshold/event leverage before a standalone backend.
+    research_priority_note: Supporting variable registry and design notes; stronger threshold/event leverage is needed before a standalone backend.
     implementation_priority: 4
 
   - mechanism_id: gsib_window_dressing
@@ -58,7 +58,7 @@ mechanisms:
     tdc_connection: Can explain temporary absorption-capacity windows and dealer intermediation variation around reporting dates.
     claim_boundary_safe: Reporting-date incentives may create predictable capacity windows.
     claim_boundary_unsafe: G-SIB scores create permanent Treasury demand or explain broad TDC deposit movements without granular evidence.
-    go_no_go_recommendation: Appendix/sidecar go; do not headline in first regcap package.
+    research_priority_note: Appendix and supporting calendar-capacity research; outside the headline scope.
     implementation_priority: 5
 
   - mechanism_id: dealer_repo_bridge
@@ -80,7 +80,7 @@ mechanisms:
     tdc_connection: Dealer warehousing is the bridge between Treasury issuance and later bank, MMF, foreign, household, or Fed absorption.
     claim_boundary_safe: Larger within-week offering amounts are associated with greater dealer-position changes across maturity buckets.
     claim_boundary_unsafe: Dealer inventory accumulation proves final domestic absorption.
-    go_no_go_recommendation: Configured navigation priority only; read the pinned producer association and diagnostic limits.
+    research_priority_note: Configured navigation priority only; read the pinned producer association and diagnostic limits.
     implementation_priority: 1
 
   - mechanism_id: duration_loss_aoci_htm
@@ -103,5 +103,5 @@ mechanisms:
     tdc_connection: Coupon-heavy or long-duration issuance may require nonbank, dealer, foreign, or Fed absorption when bank duration capacity is impaired.
     claim_boundary_safe: Duration-loss pressure is a plausible regime-dependent absorption constraint.
     claim_boundary_unsafe: Duration losses alone explain the TDC deposit residual.
-    go_no_go_recommendation: Configured research hypothesis; no promotion follows from ordering or guarded language alone.
+    research_priority_note: Configured research hypothesis; no promotion follows from ordering or guarded language alone.
     implementation_priority: 2

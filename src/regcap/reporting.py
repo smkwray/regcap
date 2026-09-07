@@ -60,13 +60,13 @@ def write_design_report(matrix_path: Path, output: Path, evidence_summary_path: 
         "",
         "These are design hypotheses, not evidence-derived rankings or admission decisions.",
         "",
-        "| Priority | Mechanism | Primary project | Recommendation |",
+        "| Priority | Mechanism | Primary project | Priority note |",
         "|---:|---|---|---|",
     ]
     for row in rows:
         lines.append(
             f"| {row['implementation_priority']} | {row['mechanism_label']} | "
-            f"{row['primary_existing_project']} | {row['go_no_go_recommendation']} |"
+            f"{row['primary_existing_project']} | {row['research_priority_note']} |"
         )
 
     if evidence_by_mechanism:

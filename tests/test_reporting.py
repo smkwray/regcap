@@ -11,6 +11,9 @@ def test_write_matrix_and_report(tmp_path: Path):
     rows = read_matrix(matrix)
     write_design_report(matrix, report)
 
+    assert "research_priority_note" in rows[0]
+    assert "Priority note" in report.read_text()
+    assert "Recommendation" not in report.read_text()
     assert len(rows) == 5
     assert rows[0]["mechanism_id"] == "dealer_repo_bridge"
     text = report.read_text(encoding="utf-8")

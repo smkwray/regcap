@@ -18,7 +18,7 @@ MATRIX_COLUMNS = [
     "tdc_connection",
     "claim_boundary_safe",
     "claim_boundary_unsafe",
-    "go_no_go_recommendation",
+    "research_priority_note",
     "implementation_priority",
 ]
 

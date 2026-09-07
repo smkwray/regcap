@@ -6,7 +6,7 @@
 
 `slrwatch` supplies SLR/leverage-capacity context and the broader constraint-decomposition lane. Its current 2020 SLR event evidence is cautionary rather than a robust positive Treasury-absorption result.
 
-`bankcap` supplies the H.8 bank-group mechanism screen. H.8 evidence is useful for mechanism context and go/no-go decisions, but it is not bank-level evidence.
+`bankcap` supplies the H.8 bank-group mechanism screen. H.8 evidence is useful for mechanism context and research-priority decisions, but it is not bank-level evidence.
 
 `bidbridge` supplies a conditional dealer-warehousing association. The pinned v5 source uses supply-only maturity-bucket and week fixed effects. Its supporting binary high-supply LP fails clean timing diagnostics; neither QT amplification nor final holder absorption is established.
 
