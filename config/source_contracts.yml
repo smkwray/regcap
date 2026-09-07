@@ -1,0 +1,191 @@
+sibling_root_hint: ../
+contracts:
+  slrwatch:
+    role: primary source for SLR leverage and duration/loss constraint decomposition.
+    required: true
+    artifacts:
+      - path: output/reports/event_2020/summary.md
+        required: true
+        destination: data/imported/slrwatch/event_2020_summary.md
+        schema:
+          format: markdown
+          required_heading: "2020 Temporary Exclusion Event Study"
+        notes: Cautionary 2020 SLR event-study read; use for claim boundary.
+      - path: output/reports/event_2020/did_results.csv
+        required: true
+        destination: data/imported/slrwatch/event_2020_did_results.csv
+        schema:
+          format: csv
+          required_columns:
+            - treatment
+            - outcome
+            - coef
+            - std_err
+            - pvalue
+            - nobs
+        notes: Compact coefficient surface for guarded SLR interpretation.
+      - path: output/reports/constraint_decomposition/summary.md
+        required: true
+        destination: data/imported/slrwatch/constraint_decomposition_summary.md
+        schema:
+          format: markdown
+          required_heading: "Constraint Decomposition Beyond SLR"
+        notes: Regime-dependent leverage, duration-loss, and funding-stress context.
+      - path: output/reports/constraint_decomposition/regime_summary.csv
+        required: true
+        destination: data/imported/slrwatch/constraint_decomposition_regime_summary.csv
+        schema:
+          format: csv
+          required_columns:
+            - entity_source
+            - policy_regime
+            - observation_count
+            - mean_headroom_pp
+            - mean_unrealized_loss_tier1
+            - leverage_dominant_share
+            - duration_loss_dominant_share
+            - funding_dominant_share
+        notes: Compact regime table for duration-loss and leverage rows.
+  bankcap:
+    role: H.8 bank-group mechanism screen and claim-boundary source.
+    required: true
+    artifacts:
+      - path: output/reports/h8_mechanism_summary.json
+        required: true
+        destination: data/imported/bankcap/h8_mechanism_summary.json
+        schema:
+          format: json
+          required_keys:
+            - recommendation
+            - claim_boundary
+            - common_target_sample
+            - bank_level_ingestion
+            - gate_checks
+        notes: Machine-readable H.8 screen summary.
+      - path: output/reports/h8_mechanism_screen_memo.md
+        required: true
+        destination: data/imported/bankcap/h8_mechanism_screen_memo.md
+        schema:
+          format: markdown
+          required_heading: "H.8 Mechanism-Screen Memo"
+        notes: Public-safe bank-group screen memo.
+      - path: output/reports/h8_go_no_go_report.md
+        required: true
+        destination: data/imported/bankcap/h8_go_no_go_report.md
+        schema:
+          format: markdown
+          required_heading: "bankcap H.8 Go/No-Go Report"
+        notes: Go/no-go status for bank-level extension.
+  bidbridge:
+    role: primary source for dealer/repo balance-sheet bridge evidence.
+    required: true
+    artifacts:
+      - path: outputs/tables/bidbridge_promotion_summary.csv
+        required: true
+        destination: data/imported/bidbridge/bidbridge_promotion_summary.csv
+        schema:
+          format: csv
+          required_columns:
+            - claim
+            - artifact
+            - estimate
+            - unit
+            - stat
+            - status
+            - interpretation
+        notes: Compact promotion table for dealer bridge evidence.
+      - path: outputs/bidbridge_promotion_memo.md
+        required: true
+        destination: data/imported/bidbridge/bidbridge_promotion_memo.md
+        schema:
+          format: markdown
+          required_heading: "BidBridge Promotion Memo"
+        notes: Dealer intermediation mechanism memo.
+      - path: outputs/tables/lp_results.csv
+        required: true
+        destination: data/imported/bidbridge/lp_results.csv
+        schema:
+          format: csv
+          required_columns:
+            - horizon
+            - beta
+            - se
+            - t_stat
+            - p_value
+            - n_obs
+            - regime
+        notes: Local-projection inventory response surface.
+      - path: outputs/tables/panel_fe_results.csv
+        required: true
+        destination: data/imported/bidbridge/panel_fe_results.csv
+        schema:
+          format: csv
+          required_columns:
+            - specification
+            - variable
+            - coefficient
+            - std_error
+            - ci_lower
+            - ci_upper
+        notes: Maturity-bucket fixed-effect surface.
+  qrawatch:
+    role: issuance composition, maturity, duration, and QRA context.
+    required: false
+    artifacts:
+      - path: output/publish/primary_dealer_summary.csv
+        required: false
+        destination: data/imported/qrawatch/primary_dealer_summary.csv
+        schema:
+          format: csv
+          required_columns:
+            - summary_type
+            - dataset_type
+            - measure
+            - value
+            - units
+            - as_of_date
+        notes: Supporting dealer and auction summary, if current publish bundle exists.
+      - path: output/publish/duration_supply_summary.csv
+        required: false
+        destination: data/imported/qrawatch/duration_supply_summary.csv
+        schema:
+          format: csv
+          required_columns:
+            - date
+            - headline_public_duration_supply
+            - headline_source_quality
+            - value_units
+            - frequency
+            - sign_convention
+        notes: Supporting duration-supply context.
+      - path: output/publish/qra_event_shock_summary.csv
+        required: false
+        destination: data/imported/qrawatch/qra_event_shock_summary.csv
+        schema:
+          format: csv
+          required_columns:
+            - quarter
+            - event_id
+            - event_date_aligned
+            - timing_quality
+            - shock_review_status
+            - claim_scope
+        notes: QRA/refunding event shock context.
+  rowflow:
+    role: contrast project for foreign/external absorption; regcap does not own this branch.
+    required: false
+    artifacts:
+      - path: output/tables/rowflow_results_summary.csv
+        required: false
+        destination: data/imported/rowflow/rowflow_results_summary.csv
+        schema:
+          format: csv
+          required_columns:
+            - sample
+            - frequency
+            - rows
+            - start
+            - end
+            - official_flow_usd_millions
+            - private_flow_usd_millions
+        notes: Optional contrast table only; do not merge into domestic-capacity claim.

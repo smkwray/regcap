@@ -1,0 +1,22 @@
+variables:
+  treasury_absorption:
+    description: Marginal holder or intermediary response to Treasury supply, treated as mechanism context unless source design identifies absorption.
+    claim_boundary: Do not infer final absorption from temporary dealer inventory or broad bank-group co-movement.
+  deposit_reserve_footprint:
+    description: Domestic deposit and reserve movements linked to Treasury finance in the broader TDC architecture.
+    claim_boundary: regcap classifies possible mechanisms; it does not claim domestic regulation caused the TDC deposit response.
+  leverage_capacity:
+    description: SLR or related leverage-denominator headroom that can make Treasuries and reserves balance-sheet costly.
+    claim_boundary: Current SLR evidence is mixed/cautionary.
+  liquidity_capacity:
+    description: HQLA and liquidity-buffer demand that may make Treasuries attractive as liquid safe assets.
+    claim_boundary: Requires direct liquidity measurement or event variation for strong claims.
+  reporting_window:
+    description: Quarter-end or year-end regulatory reporting incentives affecting balance-sheet snapshots.
+    claim_boundary: Treat as window/capacity timing, not permanent demand.
+  dealer_inventory:
+    description: Short-run dealer Treasury warehousing and repo intermediation.
+    claim_boundary: Dealer inventory accumulation is an intermediation bridge, not final domestic absorption.
+  duration_loss_pressure:
+    description: Unrealized loss, AOCI, HTM, and duration exposure constraints on bank securities demand.
+    claim_boundary: Plausible regime-dependent mechanism; not a standalone explanation of TDC residuals.

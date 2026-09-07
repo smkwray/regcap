@@ -1,0 +1,40 @@
+# Local orchestration
+do/
+
+# Local environment
+.env
+
+# Generated data and outputs
+data/raw/
+data/imported/
+data/derived/
+output/
+
+# Python artifacts and caches
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+dist/
+build/
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
+
+
+# Device-local and private files
+.env.*
+.venv/
+venv/
+env/
+.worktrees/
+.claude/
+.codex/
+.cursor/
+AGENTS.md
+CLAUDE.md
