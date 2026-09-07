@@ -80,10 +80,11 @@ contracts:
     role: primary source for dealer/repo balance-sheet bridge evidence.
     required: true
     artifacts:
-      - path: outputs/tables/bidbridge_promotion_summary.csv
+      - path: outputs/open07_v5/tables/bidbridge_promotion_summary.csv
         required: true
         destination: data/imported/bidbridge/bidbridge_promotion_summary.csv
         schema:
+          sha256: 6e922b541571be5bf4e8fabd33270940eee2d122691b2436d34d2e99b4c87469
           format: csv
           required_columns:
             - claim
@@ -94,17 +95,19 @@ contracts:
             - status
             - interpretation
         notes: Compact promotion table for dealer bridge evidence.
-      - path: outputs/bidbridge_promotion_memo.md
+      - path: outputs/open07_v5/bidbridge_promotion_memo.md
         required: true
         destination: data/imported/bidbridge/bidbridge_promotion_memo.md
         schema:
+          sha256: 96781d6f2302ebdf1ac8a7068b5fcbd1629db179b1c8f6580a23871ff063c0ae
           format: markdown
           required_heading: "BidBridge Promotion Memo"
         notes: Dealer intermediation mechanism memo.
-      - path: outputs/tables/lp_results.csv
+      - path: outputs/open07_v5/tables/lp_results.csv
         required: true
         destination: data/imported/bidbridge/lp_results.csv
         schema:
+          sha256: fa8c7f075dcc67fe52510d1fd11d3c263a24acf97dd42f820323201e04902bd2
           format: csv
           required_columns:
             - horizon
@@ -115,10 +118,11 @@ contracts:
             - n_obs
             - regime
         notes: Local-projection inventory response surface.
-      - path: outputs/tables/panel_fe_results.csv
+      - path: outputs/open07_v5/tables/panel_fe_results.csv
         required: true
         destination: data/imported/bidbridge/panel_fe_results.csv
         schema:
+          sha256: c83ff6ecbd52ac9e81c0dbc1a4286955a9edd8dd37c695f509c87d4325a1bc35
           format: csv
           required_columns:
             - specification

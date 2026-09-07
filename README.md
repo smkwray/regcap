@@ -83,6 +83,11 @@ This package is a research-navigation layer. Its configured mechanism rankings
 are hypotheses, not estimated effects or independent corroboration. Cite the
 underlying producer and verify its current evidence before using a generated note.
 
+The BidBridge contract selects four frozen v5 artifacts and checks their SHA-256
+hashes before displaying an association. A stale import, missing headline, or
+missing diagnostic boundary admits no dealer evidence. Updating this pin requires
+reviewing the producer receipt; schema validity alone does not establish freshness.
+
 - Do not claim SLR relief robustly caused Treasury absorption; the current `slrwatch` read is cautionary and mixed.
 - Do not turn H.8 bank-group screens into individual-bank evidence.
 - Do not treat dealer inventory accumulation as final domestic absorption.

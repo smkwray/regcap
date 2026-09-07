@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import csv
+import hashlib
+import math
 import json
 from dataclasses import dataclass
 from pathlib import Path
@@ -82,6 +84,9 @@ def _read_csv_rows(path: Path) -> tuple[list[dict[str, str]], list[str]]:
 
 def _schema_check(path: Path, schema: dict[str, Any]) -> tuple[str, int | None, int | None, str]:
     artifact_format = str(schema["format"])
+    expected_hash = schema.get("sha256")
+    if expected_hash is not None and hashlib.sha256(path.read_bytes()).hexdigest() != expected_hash:
+        return artifact_format, None, None, "sha256 mismatch against pinned source contract"
     if artifact_format == "csv":
         rows, columns = _read_csv_rows(path)
         missing = sorted(set(schema["required_columns"]).difference(columns))
@@ -261,25 +266,47 @@ def _dealer_bridge_row(imported_root: Path, mechanism: dict[str, str]) -> dict[s
             "Required bidbridge promotion summary is not imported.",
             mechanism["claim_boundary_unsafe"],
         )
-    rows, _ = _read_csv_rows(path)
-    headline = _find_row(rows, "status", "headline") or _find_row(rows, "claim", "lp_same_week_full_sample")
-    same_week = _find_row(rows, "claim", "lp_same_week_full_sample")
-    if headline is None:
-        note = "Promotion table is present, but no headline or same-week claim row was found."
-    else:
-        note = (
-            f"{headline['claim']} reports {headline['estimate']} {headline['unit']} "
-            f"({headline['stat']}); same-week LP context is "
-            f"{same_week['estimate']} {same_week['unit']} ({same_week['stat']})"
-            if same_week
-            else f"{headline['claim']} reports {headline['estimate']} {headline['unit']} ({headline['stat']})"
+    failures = [check for check in validate_imported_artifacts(imported_root, {"bidbridge"}) if check.failed]
+    if failures:
+        return _base_row(
+            mechanism,
+            "invalid",
+            "bidbridge",
+            "Pinned dealer artifacts are unavailable or invalid: "
+            + "; ".join(f"{check.destination.name}: {check.details}" for check in failures),
+            "No dealer evidence admitted; not final holder absorption.",
         )
+    rows, _ = _read_csv_rows(path)
+    headlines = [row for row in rows if row.get("status") == "headline"
+                 and row.get("claim") == "maturity_bucket_fe_monday"]
+    boundaries = [row.get("interpretation", "") for row in rows if row.get("status") == "boundary"]
+    if len(headlines) != 1 or not any(boundaries):
+        return _base_row(
+            mechanism,
+            "unavailable",
+            "bidbridge",
+            "Expected one Monday FE headline and an explicit diagnostic boundary; no LP fallback is admitted.",
+            "No dealer evidence admitted; not final holder absorption.",
+        )
+    headline = headlines[0]
+    try:
+        valid_estimate = math.isfinite(float(headline["estimate"]))
+    except (ValueError, TypeError):
+        valid_estimate = False
+    if not valid_estimate or not all(headline.get(key) for key in ("unit", "stat", "interpretation")):
+        return _base_row(mechanism, "invalid", "bidbridge", "The headline row is incomplete or nonfinite.",
+                         "No dealer evidence admitted; not final holder absorption.")
+    note = (
+        f"{headline['claim']} reports {headline['estimate']} {headline['unit']} "
+        f"({headline['stat']}). {headline['interpretation']} "
+        + " ".join(boundaries)
+    )
     return _base_row(
         mechanism,
-        "strongest near-term promotion",
+        "source association; navigation only",
         "bidbridge; qrawatch",
         note,
-        "Short-run dealer warehousing evidence only; not final holder absorption.",
+        "Short-run dealer warehousing association only; not final holder absorption, causal identification, or independent empirical authority.",
         _qrawatch_dealer_context(imported_root),
     )
 
@@ -401,7 +428,7 @@ def _qrawatch_dealer_context(imported_root: Path) -> str:
         rows, _ = _read_csv_rows(qra_path)
         usable = sum(1 for row in rows if row.get("usable_for_headline") == "True")
         descriptive = sum(1 for row in rows if row.get("claim_scope") == "descriptive_only")
-        pieces.append(f"QRA shock table has {usable} headline-usable events and {descriptive} descriptive-only rows")
+        pieces.append(f"QRA source table has {usable} usable_for_headline=True flags and {descriptive} descriptive-only rows; these flags do not admit identification in regcap")
     return "; ".join(pieces) if pieces else "Optional qrawatch dealer/QRA context is not imported."
 
 
@@ -475,7 +502,7 @@ def write_dealer_bridge_memo(evidence_rows: list[dict[str, str]], output: Path) 
         "",
         "## Recommended use",
         "",
-        "Use the dealer/repo bridge as the first promoted `regcap` integration lane. The supported role is narrow: dealers can warehouse Treasury supply over short horizons before final holder location is measured elsewhere.",
+        "This memo is a navigation aid. It does not promote a mechanism or supply independent empirical authority. Use the source status and limitations below; missing or invalid evidence admits no dealer association.",
         "",
         "## Source-backed status",
         "",

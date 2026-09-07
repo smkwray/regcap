@@ -27,6 +27,6 @@ First-pass prioritization:
 4. LCR / HQLA demand
 5. G-SIB surcharge / reporting-date window dressing
 
-Dealer/repo is the cleanest near-term implementation lane because existing source evidence is already built around pre-auction supply shocks and short-horizon dealer inventory. Duration-loss/AOCI/HTM is the best research lane for regime dependence, but it needs careful language. SLR remains useful as a mechanism classifier and annex unless later evidence strengthens.
+This ordering is a configured research priority, not an evidence ranking. The source-evidence summary must separately show valid inputs, a recognized headline, and the producer's diagnostic limits. Duration-loss and SLR mechanisms remain hypotheses or guarded context.
 
-The promoted integration memo lives at `output/reports/dealer_bridge_integration_memo.md` when generated. It should be read as a bridge-design note: dealer warehousing can explain short-run intermediation timing, while final holder location remains outside `regcap` unless another compact source summary supplies it.
+The navigation memo lives at `output/reports/dealer_bridge_integration_memo.md` when generated. It neither promotes a mechanism nor independently establishes a dealer association. Final holder location remains outside `regcap`.

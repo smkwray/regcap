@@ -102,6 +102,12 @@ def validate_config(config_dir: Path = CONFIG_DIR) -> list[str]:
             if schema is not None:
                 if not isinstance(schema, dict):
                     raise ConfigError(f"source contract {project} artifact schema must be a mapping")
+                expected_hash = schema.get("sha256")
+                if expected_hash is not None and (
+                    not isinstance(expected_hash, str) or len(expected_hash) != 64
+                    or any(char not in "0123456789abcdef" for char in expected_hash)
+                ):
+                    raise ConfigError(f"source contract {project} has invalid sha256")
                 artifact_format = schema.get("format")
                 if artifact_format not in {"csv", "json", "markdown"}:
                     raise ConfigError(f"source contract {project} artifact has unknown schema format {artifact_format}")

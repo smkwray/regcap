@@ -75,12 +75,12 @@ mechanisms:
       - SOMA holdings
       - repo financing context
     frequency: Weekly and auction-level.
-    cleanest_estimand: Same-week and short-horizon dealer inventory response to pre-auction announced supply shocks, with QT and maturity interactions.
-    identification_leverage: Comparatively strong because announced supply shocks are pre-auction and inventory response is short horizon; still not final holder absorption.
+    cleanest_estimand: Within-week, across-maturity conditional association between announced offering amounts and dealer-position changes.
+    identification_leverage: Supply-only maturity-bucket and week fixed effects; supporting binary LP fails clean timing diagnostics. No established QT amplification or structural causal interpretation.
     tdc_connection: Dealer warehousing is the bridge between Treasury issuance and later bank, MMF, foreign, household, or Fed absorption.
-    claim_boundary_safe: Dealers act as short-run balance-sheet bridges when supply exceeds immediate end-investor demand.
+    claim_boundary_safe: Larger within-week offering amounts are associated with greater dealer-position changes across maturity buckets.
     claim_boundary_unsafe: Dealer inventory accumulation proves final domestic absorption.
-    go_no_go_recommendation: Strongest near-term implementation candidate for cross-project integration.
+    go_no_go_recommendation: Configured navigation priority only; read the pinned producer association and diagnostic limits.
     implementation_priority: 1
 
   - mechanism_id: duration_loss_aoci_htm
@@ -103,5 +103,5 @@ mechanisms:
     tdc_connection: Coupon-heavy or long-duration issuance may require nonbank, dealer, foreign, or Fed absorption when bank duration capacity is impaired.
     claim_boundary_safe: Duration-loss pressure is a plausible regime-dependent absorption constraint.
     claim_boundary_unsafe: Duration losses alone explain the TDC deposit residual.
-    go_no_go_recommendation: High-value research lane; promote after dealer bridge integration if claim language stays guarded.
+    go_no_go_recommendation: Configured research hypothesis; no promotion follows from ordering or guarded language alone.
     implementation_priority: 2

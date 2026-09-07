@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from .config import PROJECT_ROOT, ConfigError, validate_config
-from .evidence import read_evidence_summary, validate_imported_artifacts
+from .evidence import build_evidence_rows, read_evidence_summary, validate_imported_artifacts
 from .mechanisms import MATRIX_COLUMNS
 from .reporting import read_matrix
 
@@ -50,6 +50,8 @@ def validate_package(strict: bool = False) -> list[str]:
         evidence_rows = read_evidence_summary(evidence_summary)
         if len(evidence_rows) != 5:
             raise ConfigError(f"Expected 5 evidence rows, found {len(evidence_rows)}")
+        if evidence_rows != build_evidence_rows(PROJECT_ROOT / "data/imported"):
+            raise ConfigError("Evidence summary is stale relative to current imported artifacts; regenerate it")
         messages.append(f"Validated evidence summary: {evidence_summary.relative_to(PROJECT_ROOT)}")
     elif strict:
         raise ConfigError(f"Missing strict evidence summary: {evidence_summary}")

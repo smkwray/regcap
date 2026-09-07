@@ -1,6 +1,12 @@
 from __future__ import annotations
 
 import json
+import hashlib
+
+import pytest
+
+from regcap import evidence
+from regcap.config import load_source_contracts
 from pathlib import Path
 
 from regcap.evidence import (
@@ -26,7 +32,8 @@ def _write_minimal_imports(imported_root: Path) -> None:
             [
                 "claim,artifact,estimate,unit,stat,status,interpretation",
                 "lp_same_week_full_sample,outputs/tables/lp_results.csv,7.23,$B inventory change,\"t=3.78, p=0.0002\",supporting,Immediate dealer inventory response.",
-                "maturity_bucket_fe_monday,outputs/tables/panel_fe_results.csv,10.61,$M dealer position per $B announced supply,\"se=4.15, 95% CI [2.48, 18.74]\",headline,Within-week supply maps to dealer positions.",
+                "lp_placebo_boundary,outputs/tables/lp_placebo_results.csv,2,count,2 of 5,boundary,LP does not provide clean timing validation.",
+                "maturity_bucket_fe_monday,outputs/tables/panel_fe_results.csv,9.45,$M dealer position per $B announced supply,\"se=3.54, 95% CI [2.51, 16.39]\",headline,Within-week supply maps to dealer positions.",
             ]
         ),
     )
@@ -80,20 +87,22 @@ def _write_minimal_imports(imported_root: Path) -> None:
     )
 
 
-def test_validate_imported_artifacts_checks_contract_schema(tmp_path: Path):
+def test_validate_imported_artifacts_checks_contract_schema(tmp_path: Path, monkeypatch):
     imported_root = tmp_path / "imported"
     _write_minimal_imports(imported_root)
+    _pin_fixture_contracts(imported_root, monkeypatch)
 
     checks = validate_imported_artifacts(imported_root=imported_root, projects={"bidbridge"})
 
     assert len(checks) == 4
     assert not [check for check in checks if check.failed]
-    assert any(check.row_count == 2 for check in checks if check.destination.name == "bidbridge_promotion_summary.csv")
+    assert any(check.row_count == 3 for check in checks if check.destination.name == "bidbridge_promotion_summary.csv")
 
 
-def test_optional_qrawatch_and_rowflow_contracts_are_schema_checked(tmp_path: Path):
+def test_optional_qrawatch_and_rowflow_contracts_are_schema_checked(tmp_path: Path, monkeypatch):
     imported_root = tmp_path / "imported"
     _write_minimal_imports(imported_root)
+    _pin_fixture_contracts(imported_root, monkeypatch)
 
     checks = validate_imported_artifacts(imported_root=imported_root, projects={"qrawatch", "rowflow"})
 
@@ -101,9 +110,10 @@ def test_optional_qrawatch_and_rowflow_contracts_are_schema_checked(tmp_path: Pa
     assert not [check for check in checks if check.failed]
 
 
-def test_evidence_summary_can_feed_design_report(tmp_path: Path):
+def test_evidence_summary_can_feed_design_report(tmp_path: Path, monkeypatch):
     imported_root = tmp_path / "imported"
     _write_minimal_imports(imported_root)
+    _pin_fixture_contracts(imported_root, monkeypatch)
     evidence_csv = tmp_path / "source_evidence_summary.csv"
     evidence_report = tmp_path / "source_evidence_summary.md"
     dealer_memo = tmp_path / "dealer_bridge_integration_memo.md"
@@ -124,7 +134,78 @@ def test_evidence_summary_can_feed_design_report(tmp_path: Path):
     assert len(rows) == 5
     assert reread_rows[0]["context_note"]
     assert "Source-backed status notes" in text
-    assert "strongest near-term promotion" in text
+    assert "source association; navigation only" in text
+    assert "does not provide clean timing validation" in text
+    assert "strongest near-term promotion" not in text
     assert "qrawatch dealer panel" in evidence_text
     assert "not final holder absorption" in evidence_text
     assert "Do not infer customer identity" in dealer_text
+
+
+def _pin_fixture_contracts(imported_root, monkeypatch):
+    """Use declared hashes of synthetic fixtures, never claim they are production evidence."""
+    contracts = load_source_contracts()
+    for artifact in contracts["contracts"]["bidbridge"]["artifacts"]:
+        path = imported_root / Path(artifact["destination"]).relative_to("data/imported")
+        artifact["schema"]["sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
+    monkeypatch.setattr(evidence, "load_source_contracts", lambda: contracts)
+
+
+@pytest.mark.parametrize("defect", ["missing_headline", "duplicate_headline", "missing_boundary", "nonfinite"])
+def test_dealer_evidence_never_falls_back_to_lp_or_promotes_invalid_rows(tmp_path, monkeypatch, defect):
+    imported = tmp_path / "imported"
+    _write_minimal_imports(imported)
+    path = imported / "bidbridge/bidbridge_promotion_summary.csv"
+    lines = path.read_text().splitlines()
+    if defect == "missing_headline":
+        lines = [line for line in lines if not line.startswith("maturity_bucket_fe_monday,")]
+    elif defect == "duplicate_headline":
+        lines.append(next(line for line in lines if line.startswith("maturity_bucket_fe_monday,")))
+    elif defect == "missing_boundary":
+        lines = [line for line in lines if not line.startswith("lp_placebo_boundary,")]
+    else:
+        lines = [line.replace(",9.45,", ",nan,") for line in lines]
+    path.write_text("\n".join(lines))
+    _pin_fixture_contracts(imported, monkeypatch)
+    rows = build_evidence_rows(imported)
+    assert rows[0]["status"] in {"invalid", "unavailable"}
+    assert "7.23" not in rows[0]["evidence_note"]
+    memo = tmp_path / "memo.md"
+    write_dealer_bridge_memo(rows, memo)
+    assert "first promoted" not in memo.read_text()
+
+
+def test_stale_import_is_rejected_before_rendering_estimate(tmp_path, monkeypatch):
+    imported = tmp_path / "imported"
+    _write_minimal_imports(imported)
+    _pin_fixture_contracts(imported, monkeypatch)
+    path = imported / "bidbridge/bidbridge_promotion_summary.csv"
+    path.write_text(path.read_text().replace(",9.45,", ",10.61,"))
+    checks = validate_imported_artifacts(imported, {"bidbridge"})
+    assert any(check.failed and "sha256 mismatch" in check.details for check in checks)
+    row = build_evidence_rows(imported)[0]
+    assert row["status"] == "invalid"
+    assert "10.61" not in row["evidence_note"]
+
+
+def test_missing_import_does_not_promote_dealer_lane(tmp_path):
+    row = build_evidence_rows(tmp_path)[0]
+    assert row["status"] == "missing"
+    memo = tmp_path / "memo.md"
+    write_dealer_bridge_memo([row], memo)
+    assert "first promoted" not in memo.read_text()
+
+
+def test_cached_summary_is_rejected_when_source_status_changes(tmp_path, monkeypatch):
+    from regcap import validation
+    from regcap.config import ConfigError
+
+    imported = tmp_path / "data/imported"
+    _write_minimal_imports(imported)
+    _pin_fixture_contracts(imported, monkeypatch)
+    rows = build_evidence_rows(imported)
+    rows[0]["status"] = "strongest near-term promotion"
+    write_evidence_summary_csv(rows, tmp_path / "output/tables/source_evidence_summary.csv")
+    monkeypatch.setattr(validation, "PROJECT_ROOT", tmp_path)
+    with pytest.raises(ConfigError, match="stale relative"):
+        validation.validate_package()

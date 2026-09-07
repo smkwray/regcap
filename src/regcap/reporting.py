@@ -56,7 +56,9 @@ def write_design_report(matrix_path: Path, output: Path, evidence_summary_path: 
         "- Do not duplicate raw Call Report, FR Y-9C, or FR Y-15 ingestion in this package.",
         "- Do not write to sibling projects.",
         "",
-        "## Mechanism ranking",
+        "## Configured research priorities",
+        "",
+        "These are design hypotheses, not evidence-derived rankings or admission decisions.",
         "",
         "| Priority | Mechanism | Primary project | Recommendation |",
         "|---:|---|---|---|",
@@ -111,7 +113,7 @@ def write_design_report(matrix_path: Path, output: Path, evidence_summary_path: 
         [
             "## First implementation read",
             "",
-            "Dealer/repo intermediation is the strongest near-term implementation candidate because the source project already has pre-auction supply-shock evidence and weekly dealer inventory responses. Duration-loss/AOCI/HTM pressure is the strongest research candidate for regime dependence across 2022-23, banking stress, and QT normalization, but it needs guarded language. SLR remains useful as a mechanism and regime classifier rather than a headline causal result in the current evidence state.",
+            "The configured priorities organize possible research. Evidence status must be read from the source-backed notes, including missing inputs and failed diagnostics. This report neither promotes a mechanism nor provides independent empirical authority.",
             "",
         ]
     )

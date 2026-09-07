@@ -15,7 +15,7 @@ def test_write_matrix_and_report(tmp_path: Path):
     assert rows[0]["mechanism_id"] == "dealer_repo_bridge"
     text = report.read_text(encoding="utf-8")
     assert "Do not claim SLR relief robustly caused Treasury absorption" in text
-    assert "Dealer/repo intermediation" in text
+    assert "neither promotes a mechanism nor provides independent empirical authority" in text
 
 
 def test_manifest_preserves_previous_outputs(tmp_path: Path, monkeypatch):
