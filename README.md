@@ -1,110 +1,71 @@
-# regcap
+# RegCap
 
-`regcap` is a lightweight integrator for the domestic regulatory-capacity branch of the Treasury Deposit Component research.
+RegCap organizes evidence about domestic balance-sheet capacity and Treasury
+absorption. It reads compact outputs from related projects and builds mechanism
+summaries, source-quality tables, and research-design notes. It is a navigation
+and synthesis tool; it does not estimate an independent effect on the Treasury
+Deposit Component (TDC).
 
-Core question:
+## Coverage
 
-> When Treasury supply is not absorbed abroad, what domestic balance-sheet constraints determine whether banks, dealers, MMFs, or the Fed absorb the marginal security, and how does that alter the domestic deposit/reserve footprint?
+The mechanism registry covers the Supplementary Leverage Ratio (SLR), liquidity
+coverage and high-quality liquid assets (LCR/HQLA), global systemically important
+bank (G-SIB) surcharges, dealer financing, and duration losses. Accounting context
+includes accumulated other comprehensive income (AOCI) and held-to-maturity
+(HTM) securities.
 
-The project consumes compact outputs and source metadata from sibling projects. It does not duplicate raw-data pipelines from `slrwatch`, `bankcap`, `bidbridge`, or `qrawatch`, and it does not own the foreign/external absorption branch handled by `rowflow`.
+Sources are [SLR Watch](https://github.com/smkwray/slrwatch),
+[BankCap](https://github.com/smkwray/bankcap),
+[BidBridge](https://github.com/smkwray/bidbridge), and
+[QRA Watch](https://github.com/smkwray/qrawatch), with optional
+[ROWFlow](https://github.com/smkwray/rowflow) context.
+`config/` defines source contracts and mechanism mappings.
 
-## Mechanisms
+## Install and validate
 
-The package covers five domestic-capacity mechanisms:
-
-- SLR / leverage capacity
-- LCR / HQLA demand
-- G-SIB surcharge / reporting-date window dressing
-- Dealer leverage / repo intermediation constraints
-- Duration-loss / AOCI / HTM pressure
-
-Generated local outputs are:
-
-- `output/tables/regulatory_capacity_mechanism_matrix.csv`
-- `output/tables/imported_artifact_quality.csv`
-- `output/tables/source_evidence_summary.csv`
-- `output/reports/source_evidence_summary.md`
-- `output/reports/dealer_bridge_integration_memo.md`
-- `output/reports/regulatory_capacity_design_report.md`
-- `output/manifests/regcap_manifest.json`
-
-Generated data and outputs are project-local and gitignored.
-
-## Install
-
-Use an external virtual environment:
+Python 3.11 or later is required. From the repository root:
 
 ```bash
-python3 -m venv /tmp/regcap-env
-/tmp/regcap-env/bin/python -m pip install -e ".[dev]"
-```
-
-Run tests without writing repo-local caches:
-
-```bash
-/tmp/regcap-env/bin/python -B -m pytest
-```
-
-## Command Map
-
-```bash
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -e '.[dev]'
+python -B -m pytest -q
+ruff check .
 regcap validate-config
+```
 
+## Build summaries
+
+Point `SIBLING_ROOT` at the directory containing the source projects:
+
+```bash
+export SIBLING_ROOT=..
 regcap validate-sibling-sources --sibling-root "$SIBLING_ROOT"
-
 regcap copy-sibling-outputs --sibling-root "$SIBLING_ROOT" --overwrite
-
-regcap validate-imported-artifacts \
-  --output output/tables/imported_artifact_quality.csv
-
-regcap write-mechanism-matrix \
-  --output output/tables/regulatory_capacity_mechanism_matrix.csv
-
-regcap write-evidence-summary \
-  --output output/tables/source_evidence_summary.csv \
-  --report output/reports/source_evidence_summary.md
-
-regcap write-dealer-bridge-memo \
-  --output output/reports/dealer_bridge_integration_memo.md
-
-regcap write-design-report \
-  --matrix output/tables/regulatory_capacity_mechanism_matrix.csv \
-  --evidence-summary output/tables/source_evidence_summary.csv \
-  --output output/reports/regulatory_capacity_design_report.md
-
+regcap validate-imported-artifacts --output output/tables/imported_artifact_quality.csv
+regcap write-mechanism-matrix --output output/tables/regulatory_capacity_mechanism_matrix.csv
+regcap write-evidence-summary --output output/tables/source_evidence_summary.csv --report output/reports/source_evidence_summary.md
+regcap write-dealer-bridge-memo --output output/reports/dealer_bridge_integration_memo.md
+regcap write-design-report --matrix output/tables/regulatory_capacity_mechanism_matrix.csv --evidence-summary output/tables/source_evidence_summary.csv --output output/reports/regulatory_capacity_design_report.md
 regcap validate-package --strict
 ```
 
-Set `SIBLING_ROOT` to the local project family root that contains `slrwatch`, `bankcap`, `bidbridge`, `qrawatch`, and optionally `rowflow`.
+Run each command's `--help` for output paths. Generated reports and tables live
+under `output/`; raw, imported, and derived data live under `data/`. Both are
+local artifacts ignored by Git.
 
-## Claim Boundary
+## Interpretation
 
-This package is a research-navigation layer. Its configured mechanism rankings
-are hypotheses, not estimated effects or independent corroboration. Cite the
-underlying producer and verify its current evidence before using a generated note.
+Configured mechanism rankings are hypotheses, not estimated effects or
+independent corroboration. Consult each underlying producer's sample, methods,
+uncertainty, and limits before using a summary.
 
-The BidBridge contract selects four frozen v5 artifacts and checks their SHA-256
-hashes before displaying an association. A stale import, missing headline, or
-missing diagnostic boundary admits no dealer evidence. Updating this pin requires
-reviewing the producer receipt; schema validity alone does not establish freshness.
+The BidBridge import checks four pinned artifacts and their SHA-256 hashes.
+Stale, missing, or unqualified artifacts supply no dealer evidence; schema
+validity alone does not establish freshness.
 
-- Do not claim SLR relief robustly caused Treasury absorption; the current `slrwatch` read is cautionary and mixed.
-- Do not turn H.8 bank-group screens into individual-bank evidence.
-- Do not treat dealer inventory accumulation as final domestic absorption.
-- Do not claim domestic regulation caused the TDC deposit response.
-- Do not duplicate raw Call Report, FR Y-9C, or FR Y-15 ingestion in this package.
-- Do not write to sibling projects.
-
-## Project Layout
-
-```text
-regcap/
-  config/       source contracts, mechanisms, and variable registry
-  docs/         public design notes and claim boundaries
-  src/regcap/   package and CLI
-  tests/        fixture-backed tests
-  data/         ignored local raw/imported/derived data
-  output/       ignored generated reports, tables, and manifests
-```
-
-Source projects: [slrwatch](https://github.com/smkwray/slrwatch), [bankcap](https://github.com/smkwray/bankcap), [bidbridge](https://github.com/smkwray/bidbridge), [qrawatch](https://github.com/smkwray/qrawatch), [rowflow](https://github.com/smkwray/rowflow).
+The summaries do not turn inconclusive SLR results into support for Treasury
+absorption, aggregate H.8 screens into individual-bank evidence, or dealer
+inventory into final ownership. They do not establish that regulation caused a
+deposit response. See [claim boundaries](docs/claim_boundaries.md) and
+[source notes](docs/source_notes.md).

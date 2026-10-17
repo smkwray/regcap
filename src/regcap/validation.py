@@ -86,12 +86,6 @@ def validate_package(strict: bool = False) -> list[str]:
     elif strict:
         raise ConfigError(f"Missing strict imported artifact root: {imported_root}")
 
-    forbidden_dirs = [PROJECT_ROOT / ".venv", PROJECT_ROOT / "venv", PROJECT_ROOT / "env"]
-    present = [path.name for path in forbidden_dirs if path.exists()]
-    if present:
-        raise ConfigError(f"Repo-local virtualenvs are forbidden: {present}")
-    messages.append("Validated no repo-local virtualenv")
-
     return messages
 
 

@@ -38,3 +38,7 @@ env/
 .cursor/
 AGENTS.md
 CLAUDE.md
+
+# Private local configuration
+.private-denylist
+.*-private-denylist
