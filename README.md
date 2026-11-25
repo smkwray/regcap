@@ -67,3 +67,7 @@ python -B -m pytest -q
 ruff check .
 regcap validate-config
 ```
+
+## License
+
+MIT. See [LICENSE](LICENSE).
