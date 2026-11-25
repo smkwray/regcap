@@ -19,7 +19,7 @@ The matrix columns are:
 - `research_priority_note`
 - `implementation_priority`
 
-First-pass prioritization:
+Configured research priority:
 
 1. Dealer leverage / repo intermediation constraints
 2. Duration-loss / AOCI / HTM pressure
@@ -27,6 +27,6 @@ First-pass prioritization:
 4. LCR / HQLA demand
 5. G-SIB surcharge / reporting-date window dressing
 
-This ordering is a configured research priority, not an evidence ranking. The source-evidence summary must separately show valid inputs, a recognized headline, and the producer's diagnostic limits. Duration-loss and SLR mechanisms remain hypotheses or guarded context.
+This ordering is a configured research priority, not an evidence ranking. The source-evidence summary separately reports valid inputs, a recognized headline, and the producer's diagnostic limits. Duration-loss and SLR mechanisms remain hypotheses or guarded context.
 
 The navigation memo lives at `output/reports/dealer_bridge_integration_memo.md` when generated. It neither promotes a mechanism nor independently establishes a dealer association. Final holder location remains outside `regcap`.
